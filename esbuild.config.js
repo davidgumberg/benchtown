@@ -37,7 +37,8 @@ const esbuildOptions = {
   ],
   globOptions: {
     excludeFilter: /\.(dsd|lit)\.css$/
-  }
+  },
+  publicPath: "/benchtown/_bridgetown/static",
 }
 
 build(esbuildOptions)
