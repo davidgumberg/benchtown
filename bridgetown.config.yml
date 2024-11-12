@@ -33,3 +33,13 @@ template_engine: erb
 # timezone: America/Los_Angeles
 # pagination:
 #   enabled: true
+
+collections:
+  pull_requests:
+    output: true
+    relations:
+      has_many: runs
+  runs:
+    output: true
+    relations:
+      belongs_to: pull_requests
