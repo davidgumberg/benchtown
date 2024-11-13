@@ -11,6 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Checkout results from bitcoin-dev-tools/benchcoin
+        uses: actions/checkout@v2
+        with:
+          repository: bitcoin-dev-tools/benchcoin
+          ref: gh-pages
+          path: temp_benchcoin
+
+      - name: Move results folder
+        run: |
+          mkdir -p src/benchcoin
+          mv temp_benchoin/results/* src/benchcoin/
+          rm -rf temp_benchcoin
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
