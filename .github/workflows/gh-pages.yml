@@ -21,7 +21,7 @@ jobs:
       - name: Move results folder
         run: |
           mkdir -p src/benchcoin
-          mv temp_benchoin/results/* src/benchcoin/
+          mv temp_benchcoin/results/* src/benchcoin/
           rm -rf temp_benchcoin
 
       - name: Setup Ruby
