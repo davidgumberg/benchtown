@@ -8,7 +8,7 @@ layout: default
 <% pr_number = resource.data.dig('github', 'event', 'pull_request', 'number') %>
 <% run_id = resource.data.dig('github', 'run_id') %>
 
-<div class="max-w-4xl mx-auto">
+<div class="p-8 max-w-6xl mx-auto">
   <h1 class="text-3xl font-bold mb-8">Benchmark Results</h1>
   <div class="bg-white rounded-lg shadow p-6 mb-8">
     <h2 class="text-xl font-semibold mb-4">
@@ -29,7 +29,7 @@ layout: default
                       <th class="px-4 py-2">Branch</th>
                       <th class="px-4 py-2">Command</th>
                       <th class="px-4 py-2">Mean (s)</th>
-                      <th class="px-4 py-2">Std Dev</th>
+                      <th class="px-4 py-2">(σ) σtd Dev</th>
                       <th class="px-4 py-2">User (s)</th>
                       <th class="px-4 py-2">System (s)</th>
                     </tr>
@@ -50,7 +50,7 @@ layout: default
                   </tbody>
                 </table>
 
-                <iframe src="<%= "#{flamegraph_url}" %>" height="800px" class="mb-4 w-full h-[600px] min-h-[500px]""></iframe>
+                <iframe src="<%= "#{flamegraph_url}" %>" class="mb-4""></iframe>
           <% end %>
         </div>
       </div>
