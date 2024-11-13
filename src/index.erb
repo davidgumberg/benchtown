@@ -1,0 +1,12 @@
+---
+layout: page
+title: Pulls
+---
+
+<ul class="ml-5 list-disc list-outside">
+  <% collections.pulls.resources.each do |pull| %>
+    <li>
+      <%= render Pulls::Pull.new(pull:) %>
+    </li>
+  <% end %>
+</ul>
