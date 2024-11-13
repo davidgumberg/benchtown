@@ -1,0 +1,7 @@
+<h3> <%= link_to "PR \##{@pull.data.title}", @pull %> </h3>
+
+<ul class="ml-5 list-disc list-outside">
+  <% @pull.relations.runs.each do |run| %>
+    <li><%= link_to run.data.slug, run %></li>
+  <% end %>
+</ul>

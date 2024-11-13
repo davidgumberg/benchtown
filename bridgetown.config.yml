@@ -35,11 +35,11 @@ template_engine: erb
 #   enabled: true
 
 collections:
-  pull_requests:
+  pulls:
     output: true
     relations:
       has_many: runs
   runs:
     output: true
     relations:
-      belongs_to: pull_requests
+      belongs_to: pull

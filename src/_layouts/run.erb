@@ -1,0 +1,61 @@
+---
+layout: default
+---
+
+<% networks = [ 'mainnet', 'signet' ] %>
+
+<% "TODO: Make benchmark results view component-based" %>
+<% pr_number = resource.data.dig('github', 'event', 'pull_request', 'number') %>
+<% run_id = resource.data.dig('github', 'run_id') %>
+
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-3xl font-bold mb-8">Benchmark Results</h1>
+  <div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">
+      <%= "PR #{pr_number} - Run #{run_id}" %>
+    </h2>
+    <% networks.each do |network| %>
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-4 capitalize"><%= "#{network} Results" %></h3>
+        <div class="overflow-x-auto">
+          <% resource.data.dig('results').filter { |r| r.dig('network') == network }.each do |result| %>
+              <% commit_short_id = result.parameters.commit[0..8] %>
+              <% flamegraph_filename = "#{network}-#{result.parameters.commit}-flamegraph.html" %>
+              <% flamegraph_url = url_for "benchcoin/pr-#{pr_number}/#{run_id}/#{flamegraph_filename}"%>
+
+                <table class="min-w-full table-auto mb-4">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="px-4 py-2">Branch</th>
+                      <th class="px-4 py-2">Command</th>
+                      <th class="px-4 py-2">Mean (s)</th>
+                      <th class="px-4 py-2">Std Dev</th>
+                      <th class="px-4 py-2">User (s)</th>
+                      <th class="px-4 py-2">System (s)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-t">
+                      <td class="px-4 py-2 font-mono text-sm">
+                      <a href="<%= "https://github.com/bitcoin-dev-tools/benchcoin/commit/#{commit_short_id}" %>">
+                        <%= "#{commit_short_id}" %>
+                      </a>
+                      </td>
+                      <td class="px-4 py-2 font-mono text-sm"><%= "#{result.command}" %></td>
+                      <td class="px-4 py-2 text-right"><%= "#{result.mean.truncate(3)}" %></td>
+                      <td class="px-4 py-2 text-right"><%= "#{result.stddev&.truncate(3) || 'N/A'}" %></td>
+                      <td class="px-4 py-2 text-right"><%= "#{result.user.truncate(3)}" %></td>
+                      <td class="px-4 py-2 text-right"><%= "#{result.system.truncate(3)}" %></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <iframe src="<%= "#{flamegraph_url}" %>" height="800px" class="mb-4 w-full h-[600px] min-h-[500px]""></iframe>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%= yield %>
