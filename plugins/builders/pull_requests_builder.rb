@@ -20,7 +20,6 @@ class Builders::PullRequestsBuilder < SiteBuilder
 
       pr_num = File.basename(pr_path).match(/\d+/).to_s.to_i
       pr_vars = { "runs": pr_runs.compact }
-      puts "#{pr_runs.compact} belong to #{pr_num}"
       add_resource :pulls, "#{pr_num}.html" do
         layout :pull
         title pr_num
@@ -52,7 +51,7 @@ class Builders::PullRequestsBuilder < SiteBuilder
       ___ run_vars
     end
 
-    "github['run_id']"
+    github['run_id'].to_s
   end
 end
 
