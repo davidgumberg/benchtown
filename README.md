@@ -19,17 +19,30 @@ npm install yarn
     🫴 Note: You may need to do `rbenv rehash` if you encounter errors where
     rbenv can't find newly installed binaries in your $PATH, like yarn.
 
-----
-
 
 ```bash
 yarn install # install js deps
 bundle install # install ruby gems
+```
+
+### Import benchcoin results data
+
+```bash
+git clone --single-branch --branch gh-pages git@github.com:bitcoin-dev-tools/benchcoin.git temp_benchcoin
+mkdir -p src/benchcoin
+mv temp_benchcoin/results/* src/benchcoin/
+rm -rf temp_benchcoin
+```
+
+### Running
+
+```bash
 bin/bridgetown start
 ```
 
 `bin/bridgetown start` will print the address in your console where the
-webserver is serving the built site.
+webserver is serving the built site, it will watch for changes and rebuild
+immediately.
 
 ## Project Structure
 
