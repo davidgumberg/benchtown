@@ -2,6 +2,35 @@ This is a static-site-generator based on
 [bridgetown](https://github.com/bridgetownrb/bridgetown) (jekyll fork). It
 serves as a frontend for an experimental tool for performing long running benchmarks of Bitcoin Core, found at https://github.com/bitcoin-dev-tools/benchcoin
 
+## Local set up
+
+### Dependencies 
+You will need ruby, I recommend using [`rbenv`](git@github.com:rbenv/rbenv.git)
+to install the version specified in the
+[`.ruby-version`](https://github.com/davidgumberg/benchtown/blob/main/.ruby-version)
+file.
+
+You will also need npm, which you can get through your package manager, and you
+will need yarn:
+
+```bash
+npm install yarn
+```
+    🫴 Note: You may need to do `rbenv rehash` if you encounter errors where
+    rbenv can't find newly installed binaries in your $PATH, like yarn.
+
+----
+
+
+```bash
+yarn install # install js deps
+bundle install # install ruby gems
+bin/bridgetown start
+```
+
+`bin/bridgetown start` will print the address in your console where the
+webserver is serving the built site.
+
 ## Project Structure
 
 The vast majority of the files and folders here are boilerplate / scaffolding,
