@@ -37,6 +37,7 @@ template_engine: erb
 collections:
   pulls:
     output: true
+    sort_by: title
     relations:
       has_many: runs
   runs:

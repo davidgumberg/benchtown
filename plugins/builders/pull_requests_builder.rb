@@ -49,15 +49,9 @@ class Builders::PullRequestsBuilder < SiteBuilder
     # us only need github metadata from one run, they all same 🎐
     puts metadata_folders.first
     github_json_path = File.join(metadata_folders.first, 'github.json')
-    if File.exist? github_json_path
-      github = hash_from_json(github_json_path)
-    else
-      warn "Cannot find #{github_json_path}"
-      return
-    end
+    raise IOError, "Cannot find #{github_json_path}" unless File.exist? github_json_path
+    github = hash_from_json(github_json_path)
     
-    run_vars = run_vars.merge({'github': github})
-
     # there is no 'run', there is only 'list of subruns'... 
     # get the 'network' names from the metadata folders
     # yes all of this is ugly -- no there isn't another way :)
@@ -78,12 +72,13 @@ class Builders::PullRequestsBuilder < SiteBuilder
 
     add_resource :runs, "#{github['run_id']}.html" do
       layout :run
-      pr_number github.dig('event', 'pull_request', 'number')
-      # the ___ method merges a hash into the `data` hash available to the 'view' of the resource.
-      # https://www.bridgetownrb.com/docs/plugins/external-apis#merging-hashes-directly-into-front-matter
+      pull github.dig('event', 'pull_request', 'number').to_s # caution: this really has to be a string in order for bridgetown to be happy and identify the relation
+      github github
       networks networks
       branches branches
       plots plots
+      # the ___ method merges a hash into the `data` hash available to the 'view' of the resource.
+      # https://www.bridgetownrb.com/docs/plugins/external-apis#merging-hashes-directly-into-front-matter
       ___ run_vars
     end
 
