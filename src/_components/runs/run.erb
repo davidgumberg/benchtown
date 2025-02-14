@@ -1,23 +1,24 @@
-<% networks = [ 'mainnet', 'signet' ] %>
 
-<% "TODO: Make benchmark results view component-based" %>
-<% pr_number = @run.data.dig('github', 'event', 'pull_request', 'number') %>
-<% run_id = @run.data.dig('github', 'run_id') %>
 
 <div class="p-8 max-w-6xl mx-auto">
   <h1 class="text-3xl font-bold mb-8">Benchmark Results</h1>
   <div class="bg-white rounded-lg shadow p-6 mb-8">
     <h2 class="text-xl font-semibold mb-4">
-      <%= "PR #{pr_number} - Run #{run_id}" %>
+      <%= "PR #{@pr_number} - Run #{@run_id}" %>
     </h2>
-    <% networks.each do |network| %>
+    <% @networks.each do |network| %>
       <div class="mb-8">
         <h3 class="text-lg font-semibold mb-4 capitalize"><%= "#{network} Results" %></h3>
         <div class="overflow-x-auto">
           <% @run.data.dig('results').filter { |r| r.dig('network') == network }.each do |result| %>
               <% commit_short_id = result.parameters.commit[0..8] %>
-              <% flamegraph_filename = "#{network}-#{result.parameters.commit}-flamegraph.html" %>
-              <% flamegraph_url = url_for "benchcoin/pr-#{pr_number}/#{run_id}/#{flamegraph_filename}"%>
+              <% flamegraph_filename = "#{network}-#{result.parameters.commit}-flamegraph.svg" %>
+              <% begin %>
+                <% flamegraph_url = url_for "benchcoin/pr-#{@pr_number}/#{@run_id}/#{flamegraph_filename}"%>
+              <% rescue ArgumentError => e %>
+                <p>Unbelievable, an error occurred that prevented rendering this run...</p>
+                <p><%= e %></p>
+              <% end %>
 
                 <table class="min-w-full table-auto mb-4">
                   <thead>
@@ -45,9 +46,21 @@
                     </tr>
                   </tbody>
                 </table>
-
-                <iframe src="<%= "#{flamegraph_url}" %>" class="mb-4""></iframe>
+                <object data="<%= "#{flamegraph_url}" %>" class="mb-4" width=100%></object>
           <% end %>
+          <div class="flex flex-wrap justify-center gap-5 w-full">
+            <% @plots.each do |plot| %>
+              <div class="basis-[45%]">
+              <% begin %>
+                <% plot_url = url_for "benchcoin/pr-#{@pr_number}/#{@run_id}/#{network}-plots/#{plot.filename}"%>
+              <% rescue ArgumentError => e %>
+                <p>Unbelievable, an error occurred that prevented rendering this run...</p>
+                <p><%= e %></p>
+              <% end %>
+                <img src="<%= plot_url %>" alt="Plot" class="w-full h-auto">
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
     <% end %>

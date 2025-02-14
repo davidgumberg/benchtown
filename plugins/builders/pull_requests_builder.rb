@@ -3,8 +3,8 @@ require 'json'
 # Builder that generates frontmatter from benchcoin output
 class Builders::PullRequestsBuilder < SiteBuilder
   def build
-    # According to docs, build is performed pre_read, so we need to connect
-    # a post_read hook.
+    # According to docs, build is performed pre_read, before any content has
+    # been loaded into bridgetown, so we need to connect a post_read hook.
     hook :site, :post_read do
       gen_pull_requests
     end
@@ -20,6 +20,7 @@ class Builders::PullRequestsBuilder < SiteBuilder
 
       pr_num = File.basename(pr_path).match(/\d+/).to_s.to_i
       pr_vars = { "runs": pr_runs.compact }
+      # https://www.bridgetownrb.com/docs/plugins/external-apis#the-resource-builder
       add_resource :pulls, "#{pr_num}.html" do
         layout :pull
         title pr_num
@@ -28,30 +29,67 @@ class Builders::PullRequestsBuilder < SiteBuilder
     end
   end
 
+  # this is the main import function, it should be the central point of knowledge
+  # about all things how benchcoin lays out it's results, networks, filenames, what graphs it makes,
+  # etc..
   def gen_run(run_path)
     raise ArgumentError, 'Path must be a string' unless run_path.is_a?(String)
 
-    results_json_path = File.expand_path('results.json', run_path)
-    return unless File.exist?(results_json_path)
+    # get hyperfine results.json 
+    hyperfine_results_path = File.expand_path('results.json', run_path)
+    raise IOError, "Cannot find #{hyperfine_results_path}" unless File.exist? hyperfine_results_path
+    hyperfine_results = hash_from_json(hyperfine_results_path)
 
-    results = hash_from_json results_json_path if File.exist?(results_json_path)
+    run_vars = hyperfine_results
 
-    github_json_path = File.expand_path('mainnet-metadata/github.json', run_path)
-    return unless File.exist?(github_json_path)
+    # get a list of every folder ending in -metadata
+    metadata_folders = Dir.glob(File.join(run_path, "*-metadata"))
+    raise IOError, "No *-metadata folders in #{run_path}" if metadata_folders.empty?
+      
+    # us only need github metadata from one run, they all same 🎐
+    puts metadata_folders.first
+    github_json_path = File.join(metadata_folders.first, 'github.json')
+    if File.exist? github_json_path
+      github = hash_from_json(github_json_path)
+    else
+      warn "Cannot find #{github_json_path}"
+      return
+    end
+    
+    run_vars = run_vars.merge({'github': github})
 
-    github = hash_from_json github_json_path if File.exist?(github_json_path)
+    # there is no 'run', there is only 'list of subruns'... 
+    # get the 'network' names from the metadata folders
+    # yes all of this is ugly -- no there isn't another way :)
+    networks = metadata_folders.map do |metadata_path|
+      # strip the -metadata prefix to get the network name :)
+      File.basename(metadata_path).sub(/-metadata$/, '')
+    end
 
-    # REMOVEME: Guard against the old format
-    return unless results['results'][0].key?('network')
+    branches = [ 'base', 'head' ]
 
-    run_vars = results.merge({ 'github': github, 'pull': github.dig('event', 'pull_request', 'number').to_s })
+    # fixme: this will definitely get us into trouble
+    plot_paths = Dir.glob(File.join(run_path, "#{networks.first}-plots", "*.png"))
+    plots = plot_paths.map do |plot_path|
+      filename = File.basename(plot_path)
+      title = filename.sub(/\.png$/, '').sub(/_/, ' ')
+      { filename: filename, title: title }
+    end
 
     add_resource :runs, "#{github['run_id']}.html" do
       layout :run
+      pr_number github.dig('event', 'pull_request', 'number')
+      # the ___ method merges a hash into the `data` hash available to the 'view' of the resource.
+      # https://www.bridgetownrb.com/docs/plugins/external-apis#merging-hashes-directly-into-front-matter
+      networks networks
+      branches branches
+      plots plots
       ___ run_vars
     end
 
     github['run_id'].to_s
+  rescue IOError => e
+    warn "IOError during loading: #{e}"
   end
 end
 
