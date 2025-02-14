@@ -5,7 +5,7 @@ title: Pulls
 
 <ul class="ml-5 list-disc list-outside">
   <% collections.pulls.resources.each do |pull| %>
-    <li>
+    <li class="text-xl m-6">
       <%= render Pulls::Pull.new(pull:) %>
     </li>
   <% end %>
