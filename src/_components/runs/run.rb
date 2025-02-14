@@ -9,7 +9,7 @@ class Runs::Run < Bridgetown::Component
     @run = run
     @networks = @run.data.dig('networks')
     @plots = @run.data.dig('plots')
-    @pr_number = @run.data.dig('pr_number')
+    @pr_number = @run.data.dig('pull')
     @run_id = @run.data.dig('github', 'run_id')
     @run_data_path = "benchcoin/pr-#{@pr_number}/#{@run_id}"
   end
