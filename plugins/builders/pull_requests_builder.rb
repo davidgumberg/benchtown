@@ -13,17 +13,30 @@ class Builders::PullRequestsBuilder < SiteBuilder
   def gen_pull_requests
     base_path = File.expand_path('../../src/benchcoin', __dir__)
     folder_children(base_path).each do |pr_path|
-      pr_runs = folder_children(pr_path).map { |run_path| gen_run(run_path) }
+      run_paths = folder_children(pr_path)
+ 
+      # get a list of every folder ending in -metadata in the last run
+      metadata_folders = Dir.glob(File.join(run_paths.last, "*-metadata"))
+      next if metadata_folders == []
+
+      github_json_path = File.join(metadata_folders.first, 'github.json')
+      next unless File.exist? github_json_path
+      # us only need github metadata from one run, they all same 🎐
+      github_metadata = hash_from_json(github_json_path)
+
+      pr_runs = run_paths.map { |run_path| gen_run(run_path) }
 
       # eliminate empty runs
       next unless pr_runs.compact != []
 
+      pr_title = github_metadata.dig("event", "pull_request", "title")
       pr_num = File.basename(pr_path).match(/\d+/).to_s.to_i
       pr_vars = { "runs": pr_runs.compact }
       # https://www.bridgetownrb.com/docs/plugins/external-apis#the-resource-builder
       add_resource :pulls, "#{pr_num}.html" do
         layout :pull
         title pr_num
+        pr_title pr_title
         ___ pr_vars
       end
     end
@@ -44,14 +57,16 @@ class Builders::PullRequestsBuilder < SiteBuilder
 
     # get a list of every folder ending in -metadata
     metadata_folders = Dir.glob(File.join(run_path, "*-metadata"))
-    raise IOError, "No *-metadata folders in #{run_path}" if metadata_folders.empty?
+    # format too old
+    return if metadata_folders.empty?
       
     # us only need github metadata from one run, they all same 🎐
-    puts metadata_folders.first
     github_json_path = File.join(metadata_folders.first, 'github.json')
     raise IOError, "Cannot find #{github_json_path}" unless File.exist? github_json_path
     github = hash_from_json(github_json_path)
-    
+
+
+   
     # there is no 'run', there is only 'list of subruns'... 
     # get the 'network' names from the metadata folders
     # yes all of this is ugly -- no there isn't another way :)

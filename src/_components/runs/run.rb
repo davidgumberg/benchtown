@@ -12,5 +12,6 @@ class Runs::Run < Bridgetown::Component
     @pr_number = @run.data.dig('pull')
     @run_id = @run.data.dig('github', 'run_id')
     @run_data_path = "benchcoin/pr-#{@pr_number}/#{@run_id}"
+    @pr_title = @run.relations.pull.data.pr_title
   end
 end
